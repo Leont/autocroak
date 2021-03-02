@@ -5,11 +5,14 @@
 
 static Perl_ppaddr_t opcodes[OP_max];
 
+#ifndef cop_hints_exists_pvs
+#define cop_hints_exists_pvs(cop, key, flags) cop_hints_fetch_pvs(cop, key, flags | 0x00000002)
+#endif
+
 #define INC_WRAPPER(TYPE)\
 static OP* croak_##TYPE(pTHX) {\
 	OP* next = opcodes[OP_##TYPE](aTHX);\
-	SV* should_croak = cop_hints_fetch_pvs(PL_curcop, "autocroak", 0);\
-	if (should_croak != &PL_sv_placeholder && SvTRUE(should_croak)) {\
+	if (cop_hints_exists_pvs(PL_curcop, "autocroak", 0)) {\
 		dSP;\
 		if (!SvOK(TOPs))\
 			Perl_croak(aTHX_ "Could not call %s: %s", PL_op_name[OP_##TYPE], strerror(errno));\
