@@ -22,6 +22,26 @@ static OP* croak_##TYPE(pTHX) {\
 #include "autocroak.inc"
 #undef INC_WRAPPER
 
+static OP* croak_SYSTEM(pTHX) {
+	OP* next = opcodes[OP_SYSTEM](aTHX);
+	if (cop_hints_exists_pvs(PL_curcop, "autocroak", 0)) {
+		dSP;
+		if (SvTRUE(TOPs))
+			Perl_croak(aTHX_ "Could not call system: it returned %d", SvUV(TOPs));
+	}
+	return next;
+}
+
+static OP* croak_PRINT(pTHX) {
+	OP* next = opcodes[OP_PRINT](aTHX);
+	if (cop_hints_exists_pvs(PL_curcop, "autocroak", 0)) {
+		dSP;
+		if (!SvTRUE(TOPs))
+			Perl_croak(aTHX_ "Could not print: %s", strerror(errno));
+	}
+	return next;
+}
+
 static unsigned initialized;
 
 MODULE = autocroak				PACKAGE = autocroak
@@ -36,6 +56,8 @@ BOOT:
 		opcodes[OP_##TYPE] = PL_ppaddr[OP_##TYPE];\
 		PL_ppaddr[OP_##TYPE] = croak_##TYPE;
 #include "autocroak.inc"
+		INC_WRAPPER(SYSTEM)
+		INC_WRAPPER(PRINT)
 #undef INC_WRAPPER
 	}
 	OP_CHECK_MUTEX_UNLOCK;
