@@ -19,4 +19,17 @@ sub unimport {
 
 1;
 
-# ABSTRACT: BLABLABLAB
+# ABSTRACT: Replace functions with ones that succeed or die with lexical scope
+
+=head1 SYNOPSIS
+
+ use autocroak;
+ 
+ open(my $fh, '<', $filename); # No need to check!
+ print "Hello World"; # No need to check either
+
+=head1 DESCRIPTION
+
+The autodie pragma provides a convenient way to replace functions that normally return false on failure with equivalents that throw an exception on failure.
+
+The autodie pragma has lexical scope, meaning that functions and subroutines altered with autodie will only change their behaviour until the end of the enclosing block, file, or eval.
