@@ -42,6 +42,20 @@ static OP* croak_PRINT(pTHX) {
 	return next;
 }
 
+static OP* croak_FLOCK(pTHX) {
+	if (cop_hints_exists_pvs(PL_curcop, "autocroak", 0)) {
+		dSP;
+		int non_blocking = TOPu & LOCK_NB;
+		OP* next = opcodes[OP_FLOCK](aTHX);
+		SPAGAIN;
+		if (!SvOK(TOPs) && (!non_blocking || errno != EAGAIN))
+			Perl_croak(aTHX_ "Could not flock: %s", strerror(errno));
+		return next;
+	}
+	else
+		return opcodes[OP_FLOCK](aTHX);
+}
+
 static unsigned initialized;
 
 MODULE = autocroak				PACKAGE = autocroak
@@ -58,6 +72,7 @@ BOOT:
 #include "autocroak.inc"
 		INC_WRAPPER(SYSTEM)
 		INC_WRAPPER(PRINT)
+		INC_WRAPPER(FLOCK)
 #undef INC_WRAPPER
 	}
 	OP_CHECK_MUTEX_UNLOCK;
