@@ -5,12 +5,14 @@
 
 static Perl_ppaddr_t opcodes[OP_max];
 #define pragma_name "autocroak"
+#define pragma_name_length (sizeof(pragma_name) - 1)
+static U32 pragma_hash;
 
-#ifndef cop_hints_exists_pvs
-#define cop_hints_exists_pvs(cop, key, flags) cop_hints_fetch_pvs(cop, key, flags | 0x00000002)
+#ifndef cop_hints_exists_pvn
+#define cop_hints_exists_pvn(cop, key, len, hash, flags) cop_hints_fetch_pvn(cop, key, len, hash, flags | 0x02)
 #endif
 
-#define autocroak_enabled() cop_hints_exists_pvs(PL_curcop, pragma_name, 0)
+#define autocroak_enabled() cop_hints_exists_pvn(PL_curcop, pragma_name, pragma_name_length, pragma_hash, 0)
 
 #define INC_WRAPPER(TYPE)\
 static OP* croak_##TYPE(pTHX) {\
@@ -69,6 +71,7 @@ BOOT:
 	OP_CHECK_MUTEX_LOCK;
 	if (!initialized) {
 		initialized = 1;
+		PERL_HASH(pragma_hash, pragma_name, pragma_name_length);
 #define INC_WRAPPER(TYPE) \
 		opcodes[OP_##TYPE] = PL_ppaddr[OP_##TYPE];\
 		PL_ppaddr[OP_##TYPE] = croak_##TYPE;
