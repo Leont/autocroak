@@ -30,6 +30,8 @@ sub unimport {
 
 =head1 DESCRIPTION
 
-The autodie pragma provides a convenient way to replace functions that normally return false on failure with equivalents that throw an exception on failure.
+The autocroak pragma provides a convenient way to replace functions that normally return false on failure with equivalents that throw an exception on failure.
 
-The autodie pragma has lexical scope, meaning that functions and subroutines altered with autodie will only change their behaviour until the end of the enclosing block, file, or eval.
+The autocroak pragma has lexical scope, meaning that functions and subroutines altered with autodie will only change their behaviour until the end of the enclosing block, file, or eval.
+
+Note: B<This is an early release, the exception messages as well as types will likely change in the future, do not depend on this yet>.
