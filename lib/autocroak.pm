@@ -12,10 +12,12 @@ sub import {
 	my (undef, %args) = @_;
 	$^H |= 0x020000;
 	$^H{"autocroak/enabled"} = 1;
-	for my $op (keys %{ $args{allow} }) {
+
+	for my $op(keys %{ $args{allow} }) {
 		my $key = "autocroak/\U$op";
-		my @allows = ref $args{allow}{$op} ? @{ $args{allow}{$op} } : $args{allow}{$op};
-		for my $value (@allows) {
+		$^H{$key} //= '';
+		my $values = $args{allow}{$op_name};
+		for my $value (ref $values ? @{ $values } : $values) {
 			vec($^H{$key}, $value, 1) = 1;
 		}
 	}
@@ -24,16 +26,7 @@ sub import {
 sub unimport {
 	my (undef, %args) = @_;
 	$^H |= 0x020000;
-	delete $^H{"autocroak/enabled"};
-
-	for my $op (keys %{ $args{disallow} }) {
-		my $key = "autocroak/\U$op";
-		my @disallows = ref $args{disallow}{$op} ? @{ $args{disallow}{$op} } : $args{disallow}{$op};
-		for my $value (@disallows) {
-			vec($^H{$key}, $value, 1) = 0;
-		}
-		delete $^H{$key} if $^H{$key} =~ / ^ \0* $ /x;
-	}
+	delete $^H{$_} for grep m{^autocroak/}, keys %^H;
 }
 
 1;
@@ -174,5 +167,59 @@ Note: B<This is an early release, the exception messages as well as types will l
 =item * shmget
 
 =item * shmread
+
+=item * C<-R>
+
+=item * C<-W>
+
+=item * C<-X>
+
+=item * C<-r>
+
+=item * C<-w>
+
+=item * C<-x>
+
+=item * C<-e>
+
+=item * C<-s>
+
+=item * C<-M>
+
+=item * C<-C>
+
+=item * C<-A>
+
+=item * C<-O>
+
+=item * C<-o>
+
+=item * C<-z>
+
+=item * C<-S>
+
+=item * C<-c>
+
+=item * C<-b>
+
+=item * C<-f>
+
+=item * C<-d>
+
+=item * C<-p>
+
+=item * C<-u>
+
+=item * C<-g>
+
+=item * C<-k>
+
+=item * C<-l>
+
+=item * C<-t>
+
+=item * C<-T>
+
+=item * C<-B>
 
 =back

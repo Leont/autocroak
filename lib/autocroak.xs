@@ -36,7 +36,26 @@ static OP* croak_##TYPE(pTHX) {\
 	}\
 	return next;\
 }
+
+#define INC_WRAPPER_FT(TYPE, NAME) \
+static OP* croak_##TYPE(pTHX) {\
+	dSP;\
+	SV* filename = TOPs;\
+	OP* next = opcodes[OP_##TYPE](aTHX);\
+	if (autocroak_enabled()) {\
+		SPAGAIN;\
+		if (!SvOK(TOPs) && !allowed_for(TYPE, TRUE)) {\
+				SV* message = newSVpvs("Could not " NAME " '");\
+				sv_catsv(message, filename);\
+				sv_catpvf(message, "': %s", strerror(errno));\
+				croak_sv(message);\
+		}\
+	}\
+	return next;\
+}
+
 #include "autocroak.inc"
+#undef INC_WRAPPER_FT
 #undef INC_WRAPPER
 
 static OP* croak_OPEN(pTHX) {
@@ -116,11 +135,13 @@ BOOT:
 #define INC_WRAPPER(TYPE) \
 		opcodes[OP_##TYPE] = PL_ppaddr[OP_##TYPE];\
 		PL_ppaddr[OP_##TYPE] = croak_##TYPE;
+#define INC_WRAPPER_FT(TYPE, NAME) INC_WRAPPER(TYPE)
 #include "autocroak.inc"
 		INC_WRAPPER(OPEN)
 		INC_WRAPPER(SYSTEM)
 		INC_WRAPPER(PRINT)
 		INC_WRAPPER(FLOCK)
+#undef INC_WRAPPER_FT
 #undef INC_WRAPPER
 	}
 	OP_CHECK_MUTEX_UNLOCK;
