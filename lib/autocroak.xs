@@ -4,7 +4,8 @@
 #include "XSUB.h"
 
 static Perl_ppaddr_t opcodes[OP_max];
-#define pragma_name "autocroak"
+#define pragma_base "autocroak/"
+#define pragma_name pragma_base "enabled"
 #define pragma_name_length (sizeof(pragma_name) - 1)
 static U32 pragma_hash;
 
@@ -24,7 +25,7 @@ bool S_errno_in_bitset(pTHX_ SV* arg) {
 	return FALSE;
 }
 
-#define allowed_for(TYPE) S_errno_in_bitset(aTHX_ cop_hints_fetch_pvs(PL_curcop, pragma_name "_" #TYPE, 0))
+#define allowed_for(TYPE) S_errno_in_bitset(aTHX_ cop_hints_fetch_pvs(PL_curcop, pragma_base #TYPE, 0))
 
 #define INC_WRAPPER(TYPE)\
 static OP* croak_##TYPE(pTHX) {\

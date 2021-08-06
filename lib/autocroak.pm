@@ -1,4 +1,5 @@
 package autocroak;
+our $VERSION = 0.001;
 
 use strict;
 use warnings;
@@ -10,9 +11,9 @@ XSLoader::load(__PACKAGE__, __PACKAGE__->VERSION);
 sub import {
 	my (undef, %args) = @_;
 	$^H |= 0x020000;
-	$^H{autocroak} = 1;
+	$^H{"autocroak/enabled"} = 1;
 	for my $op (keys %{ $args{allow} }) {
-		my $key = "autocroak_\U$op";
+		my $key = "autocroak/\U$op";
 		my @allows = ref $args{allow}{$op} ? @{ $args{allow}{$op} } : $args{allow}{$op};
 		for my $value (@allows) {
 			vec($^H{$key}, $value, 1) = 1;
@@ -23,10 +24,10 @@ sub import {
 sub unimport {
 	my (undef, %args) = @_;
 	$^H |= 0x020000;
-	delete $^H{autocroak};
+	delete $^H{"autocroak/enabled"};
 
 	for my $op (keys %{ $args{disallow} }) {
-		my $key = "autocroak_\U$op";
+		my $key = "autocroak/\U$op";
 		my @disallows = ref $args{disallow}{$op} ? @{ $args{disallow}{$op} } : $args{disallow}{$op};
 		for my $value (@disallows) {
 			vec($^H{$key}, $value, 1) = 0;
