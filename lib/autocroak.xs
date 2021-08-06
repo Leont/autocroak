@@ -26,12 +26,12 @@ bool S_errno_in_bitset(pTHX_ SV* arg, bool default_result) {
 
 #define allowed_for(TYPE, default_result) S_errno_in_bitset(aTHX_ cop_hints_fetch_pvs(PL_curcop, pragma_base #TYPE, 0), default_result)
 
-#define INC_WRAPPER(TYPE)\
+#define INC_WRAPPER(TYPE, CHECK)\
 static OP* croak_##TYPE(pTHX) {\
 	OP* next = opcodes[OP_##TYPE](aTHX);\
 	if (autocroak_enabled()) {\
 		dSP;\
-		if (!SvOK(TOPs) && !allowed_for(TYPE, FALSE))\
+		if (!CHECK(TOPs) && !allowed_for(TYPE, FALSE))\
 			Perl_croak(aTHX_ "Could not call %s: %s", PL_op_name[OP_##TYPE], strerror(errno));\
 	}\
 	return next;\
@@ -97,16 +97,6 @@ static OP* croak_SYSTEM(pTHX) {
 	return next;
 }
 
-static OP* croak_PRINT(pTHX) {
-	OP* next = opcodes[OP_PRINT](aTHX);
-	if (autocroak_enabled()) {
-		dSP;
-		if (!SvTRUE(TOPs) && !allowed_for(PRINT, FALSE))
-			Perl_croak(aTHX_ "Could not print: %s", strerror(errno));
-	}
-	return next;
-}
-
 static OP* croak_FLOCK(pTHX) {
 	if (autocroak_enabled()) {
 		dSP;
@@ -132,15 +122,14 @@ BOOT:
 	if (!initialized) {
 		initialized = 1;
 		PERL_HASH(pragma_hash, pragma_name, pragma_name_length);
-#define INC_WRAPPER(TYPE) \
+#define INC_WRAPPER(TYPE, CHECK) \
 		opcodes[OP_##TYPE] = PL_ppaddr[OP_##TYPE];\
 		PL_ppaddr[OP_##TYPE] = croak_##TYPE;
-#define INC_WRAPPER_FT(TYPE, NAME) INC_WRAPPER(TYPE)
+#define INC_WRAPPER_FT(TYPE, NAME) INC_WRAPPER(TYPE, NAME)
 #include "autocroak.inc"
-		INC_WRAPPER(OPEN)
-		INC_WRAPPER(SYSTEM)
-		INC_WRAPPER(PRINT)
-		INC_WRAPPER(FLOCK)
+		INC_WRAPPER(OPEN, 0)
+		INC_WRAPPER(SYSTEM, 0)
+		INC_WRAPPER(FLOCK, 0)
 #undef INC_WRAPPER_FT
 #undef INC_WRAPPER
 	}
