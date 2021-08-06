@@ -8,13 +8,55 @@ use XSLoader;
 
 XSLoader::load(__PACKAGE__, __PACKAGE__->VERSION);
 
+my %key_for = (
+	pipe          => 'PIPE_OP',
+	getsockopt    => 'GSOCKOPT',
+	setsockopt    => 'SSOCKOPT',
+	opendir       => 'OPEN_DIR',
+	do            => 'DOFILE',
+	gethostbyaddr => 'GHBYADDR',
+	getnetbyaddr  => 'GNBYADDR',
+
+	-R => 'FTRREAD',
+	-W => 'FTRWRITE',
+	-X => 'FTREXEC',
+	-r => 'FTEREAD',
+	-w => 'FTEWRITE',
+	-x => 'FTEEXEC',
+
+	-e => "FTIS",
+	-s => "FTSIZE",
+	-M => "FTMTIME",
+	-C => "FTCTIME",
+	-A => "FTATIME",
+
+	-O => "FTROWNED",
+	-o => "FTEOWNED",
+	-z => "FTZERO",
+	-S => "FTSOCK",
+	-c => "FTCHR",
+	-b => "FTBLK",
+	-f => "FTFILE",
+	-d => "FTDIR",
+	-p => "FTPIPE",
+	-u => "FTSUID",
+	-g => "FTSGID",
+	-k => "FTSVTX",
+
+	-l => "FTLINK",
+	-t => "FTTTY",
+	-T => "FTTEXT",
+	-B => "FTBINARY",
+);
+
 sub import {
 	my (undef, %args) = @_;
 	$^H |= 0x020000;
 	$^H{"autocroak/enabled"} = 1;
 
-	for my $op(keys %{ $args{allow} }) {
-		my $key = "autocroak/\U$op";
+	for my $op_name (keys %{ $args{allow} }) {
+		my $op_key = $key_for{$op_name} // uc $op_name;
+		my $key = "autocroak/$op_key";
 		$^H{$key} //= '';
 		my $values = $args{allow}{$op_name};
 		for my $value (ref $values ? @{ $values } : $values) {
