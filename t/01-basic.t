@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Test::More;
+use Errno 'ENOENT';
 
 subtest basic => sub {
 	use autocroak;
@@ -11,6 +12,16 @@ subtest basic => sub {
 		open my $fh, '<', 'nonexistent';
 	};
 	like($@, qr/No such/);
+};
+
+subtest allow => sub {
+	use autocroak allow => { open => ENOENT };
+	my $ret = eval {
+		open my $fh, '<', 'nonexistent';
+	};
+	is($@, '');
+	is($!+0, ENOENT);
+	is($ret, undef);
 };
 
 done_testing;
