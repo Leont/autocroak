@@ -15,24 +15,23 @@ static U32 pragma_hash;
 
 #define autocroak_enabled() cop_hints_exists_pvn(PL_curcop, pragma_name, pragma_name_length, pragma_hash, 0)
 
-bool S_errno_in_bitset(pTHX_ SV* arg) {
+bool S_errno_in_bitset(pTHX_ SV* arg, bool default_result) {
 	if (SvPOK(arg)) {
 		size_t byte = errno / 8;
 		size_t position = 1 << (errno % 8);
-		if (byte < SvCUR(arg) && SvPVX(arg)[byte] & position)
-			return TRUE;
+		return byte < SvCUR(arg) && SvPVX(arg)[byte] & position;
 	}
-	return FALSE;
+	return default_result;
 }
 
-#define allowed_for(TYPE) S_errno_in_bitset(aTHX_ cop_hints_fetch_pvs(PL_curcop, pragma_base #TYPE, 0))
+#define allowed_for(TYPE, default_result) S_errno_in_bitset(aTHX_ cop_hints_fetch_pvs(PL_curcop, pragma_base #TYPE, 0), default_result)
 
 #define INC_WRAPPER(TYPE)\
 static OP* croak_##TYPE(pTHX) {\
 	OP* next = opcodes[OP_##TYPE](aTHX);\
 	if (autocroak_enabled()) {\
 		dSP;\
-		if (!SvOK(TOPs) && !allowed_for(TYPE))\
+		if (!SvOK(TOPs) && !allowed_for(TYPE, FALSE))\
 			Perl_croak(aTHX_ "Could not call %s: %s", PL_op_name[OP_##TYPE], strerror(errno));\
 	}\
 	return next;\
@@ -49,7 +48,7 @@ static OP* croak_OPEN(pTHX) {
 			SV* filename = sv_2mortal(SvREFCNT_inc(MARK[3]));
 			OP* next = opcodes[OP_OPEN](aTHX);
 			SPAGAIN;
-			if (!SvOK(TOPs) && !allowed_for(OPEN)) {
+			if (!SvOK(TOPs) && !allowed_for(OPEN, FALSE)) {
 				SV* message = newSVpvs("Could not open file '");
 				sv_catsv(message, filename); // this will handle unicode
 				sv_catpvf(message, "' with mode %s: %s", SvPV_nolen(mode), strerror(errno));
@@ -60,7 +59,7 @@ static OP* croak_OPEN(pTHX) {
 		else {
 			OP* next = opcodes[OP_OPEN](aTHX);
 			SPAGAIN;
-			if (!SvOK(TOPs) && !allowed_for(OPEN))
+			if (!SvOK(TOPs) && !allowed_for(OPEN, FALSE))
 				Perl_croak(aTHX_ "Could not open: %s", strerror(errno));
 			return next;
 		}
@@ -73,7 +72,7 @@ static OP* croak_SYSTEM(pTHX) {
 	OP* next = opcodes[OP_SYSTEM](aTHX);
 	if (autocroak_enabled()) {
 		dSP;
-		if (SvTRUE(TOPs) && !allowed_for(SYSTEM))
+		if (SvTRUE(TOPs) && !allowed_for(SYSTEM, FALSE))
 			Perl_croak(aTHX_ "Can't call system: it returned %d", SvUV(TOPs));
 	}
 	return next;
@@ -83,19 +82,19 @@ static OP* croak_PRINT(pTHX) {
 	OP* next = opcodes[OP_PRINT](aTHX);
 	if (autocroak_enabled()) {
 		dSP;
-		if (!SvTRUE(TOPs) && !allowed_for(PRINT))
+		if (!SvTRUE(TOPs) && !allowed_for(PRINT, FALSE))
 			Perl_croak(aTHX_ "Could not print: %s", strerror(errno));
 	}
 	return next;
 }
 
 static OP* croak_FLOCK(pTHX) {
-	if (autocroak_enabled() && !allowed_for(FLOCK)) {
+	if (autocroak_enabled()) {
 		dSP;
 		int non_blocking = TOPu & LOCK_NB;
 		OP* next = opcodes[OP_FLOCK](aTHX);
 		SPAGAIN;
-		if (!SvOK(TOPs) && !(non_blocking && errno == EAGAIN || allowed_for(FLOCK)))
+		if (!SvOK(TOPs) && !allowed_for(FLOCK, non_blocking && errno == EAGAIN))
 			Perl_croak(aTHX_ "Could not flock: %s", strerror(errno));
 		return next;
 	}
