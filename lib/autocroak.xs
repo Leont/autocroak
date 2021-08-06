@@ -39,6 +39,35 @@ static OP* croak_##TYPE(pTHX) {\
 #include "autocroak.inc"
 #undef INC_WRAPPER
 
+static OP* croak_OPEN(pTHX) {
+	if (autocroak_enabled()) {
+		dSP;
+		SV **mark = PL_stack_base + TOPMARK;
+		if (SP - MARK == 3 && SvPOK(MARK[3])) {
+			SV* mode = sv_2mortal(SvREFCNT_inc(MARK[2]));
+			SV* filename = sv_2mortal(SvREFCNT_inc(MARK[3]));
+			OP* next = opcodes[OP_OPEN](aTHX);
+			SPAGAIN;
+			if (!SvOK(TOPs) && !allowed_for(OPEN)) {
+				SV* message = newSVpvs("Could not open file '");
+				sv_catsv(message, filename); // this will handle unicode
+				sv_catpvf(message, "' with mode %s: %s", SvPV_nolen(mode), strerror(errno));
+				croak_sv(message);
+			}
+			return next;
+		}
+		else {
+			OP* next = opcodes[OP_OPEN](aTHX);
+			SPAGAIN;
+			if (!SvOK(TOPs) && !allowed_for(OPEN))
+				Perl_croak(aTHX_ "Could not open: %s", strerror(errno));
+			return next;
+		}
+	}
+	else
+		return opcodes[OP_OPEN](aTHX);
+}
+
 static OP* croak_SYSTEM(pTHX) {
 	OP* next = opcodes[OP_SYSTEM](aTHX);
 	if (autocroak_enabled()) {
@@ -88,6 +117,7 @@ BOOT:
 		opcodes[OP_##TYPE] = PL_ppaddr[OP_##TYPE];\
 		PL_ppaddr[OP_##TYPE] = croak_##TYPE;
 #include "autocroak.inc"
+		INC_WRAPPER(OPEN)
 		INC_WRAPPER(SYSTEM)
 		INC_WRAPPER(PRINT)
 		INC_WRAPPER(FLOCK)
