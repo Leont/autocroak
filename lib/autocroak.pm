@@ -57,3 +57,121 @@ Optionally you can pass it an allow hash listing errors that are allowed for cer
  use autocroak allow => { unlink => ENOENT };
 
 Note: B<This is an early release, the exception messages as well as types will likely change in the future, do not depend on this yet>.
+
+=head2 Supported keywords:
+
+=over 4
+
+=item * open
+
+=item * sysopen
+
+=item * close
+
+=item * system
+
+=item * print
+
+=item * flock
+
+=item * truncate
+
+=item * exec
+
+=item * fork
+
+=item * fcntl
+
+=item * binmode
+
+=item * ioctl
+
+=item * pipe
+
+=item * kill
+
+=item * bind
+
+=item * connect
+
+=item * listen
+
+=item * setsockopt
+
+=item * accept
+
+=item * getsockopt
+
+=item * shutdown
+
+=item * sockpair
+
+=item * read
+
+=item * recv
+
+=item * sysread
+
+=item * syswrite
+
+=item * stat
+
+=item * chdir
+
+=item * chown
+
+=item * chroot
+
+=item * unlink
+
+=item * chmod
+
+=item * utime
+
+=item * rename
+
+=item * link
+
+=item * symlink
+
+=item * readlink
+
+=item * mkdir
+
+=item * rmdir
+
+=item * opendir
+
+=item * closedir
+
+=item * do
+
+=item * dbmopen
+
+=item * dbmclose
+
+=item * gethostbyaddr
+
+=item * getnetbyaddr
+
+=item * msgctl
+
+=item * msgget
+
+=item * msgrcv
+
+=item * msgsnd
+
+=item * semctl
+
+=item * semget
+
+=item * semop
+
+=item * shmctl
+
+=item * shmget
+
+=item * shmread
+
+=back
