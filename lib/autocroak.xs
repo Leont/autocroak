@@ -38,6 +38,29 @@ static OP* croak_##TYPE(pTHX) {\
 	return next;\
 }
 
+#define NUMERIC_WRAPPER(TYPE, OFFSET)\
+static OP* croak_##TYPE(pTHX) {\
+	dSP;\
+	SV **mark = PL_stack_base + TOPMARK;\
+	size_t expected = SP - MARK - OFFSET;\
+	SV* filename = expected == 1 ? MARK[1 + OFFSET] : NULL;\
+	OP* next = opcodes[OP_##TYPE](aTHX);\
+	if (autocroak_enabled()) {\
+		SPAGAIN;\
+		UV got = SvUV(TOPs);\
+		if (got < expected && !allowed_for(TYPE, FALSE))\
+			if (expected == 1) {\
+				SV* message = newSVpvf("Could not %s '", PL_op_name[OP_##TYPE]);\
+				sv_catsv(message, filename);\
+				sv_catpvf(message, "': %s", strerror(errno));\
+				croak_sv(message);\
+			}\
+			else\
+				Perl_croak(aTHX_ "Could not %s (%lu/%lu times): %s", PL_op_name[OP_##TYPE], (expected-got) ,expected, strerror(errno));\
+	}\
+	return next;\
+}
+
 #define FILETEST_WRAPPER(TYPE, NAME) \
 static OP* croak_##TYPE(pTHX) {\
 	dSP;\
@@ -57,6 +80,7 @@ static OP* croak_##TYPE(pTHX) {\
 
 #include "autocroak.inc"
 #undef FILETEST_WRAPPER
+#undef NUMERIC_WRAPPER
 #undef UNDEFINED_WRAPPER
 
 static OP* croak_OPEN(pTHX) {
@@ -137,6 +161,7 @@ BOOT:
 		opcodes[OP_##TYPE] = PL_ppaddr[OP_##TYPE];\
 		PL_ppaddr[OP_##TYPE] = croak_##TYPE;
 #define UNDEFINED_WRAPPER(TYPE) OPCODE_REPLACE(TYPE)
+#define NUMERIC_WRAPPER(TYPE, OFFSET) OPCODE_REPLACE(TYPE)
 #define FILETEST_WRAPPER(TYPE, NAME) OPCODE_REPLACE(TYPE)
 #include "autocroak.inc"
 		OPCODE_REPLACE(OPEN)
@@ -144,6 +169,7 @@ BOOT:
 		OPCODE_REPLACE(PRINT)
 		OPCODE_REPLACE(FLOCK)
 #undef FILETEST_WRAPPER
+#undef NUMERIC_WRAPPER
 #undef UNDEFINED_WRAPPER
 	}
 	OP_CHECK_MUTEX_UNLOCK;
