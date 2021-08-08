@@ -117,7 +117,7 @@ static OP* croak_SYSTEM(pTHX) {
 	if (autocroak_enabled()) {
 		dSP;
 		if (SvTRUE(TOPs) && !allowed_for(SYSTEM, FALSE))
-			Perl_croak(aTHX_ "Can't call system: it returned %d", SvUV(TOPs));
+			Perl_croak(aTHX_ "Can't call system: it returned %" UVuf, SvUV(TOPs));
 	}
 	return next;
 }
