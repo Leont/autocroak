@@ -1,6 +1,7 @@
 #define PERL_NO_GET_CONTEXT
 #include "EXTERN.h"
 #include "perl.h"
+#undef UNLINK
 #include "XSUB.h"
 
 static Perl_ppaddr_t opcodes[OP_max];
@@ -26,7 +27,7 @@ bool S_errno_in_bitset(pTHX_ SV* arg, bool default_result) {
 
 #define allowed_for(TYPE, default_result) S_errno_in_bitset(aTHX_ cop_hints_fetch_pvs(PL_curcop, pragma_base #TYPE, 0), default_result)
 
-#define INC_WRAPPER(TYPE)\
+#define UNDEFINED_WRAPPER(TYPE)\
 static OP* croak_##TYPE(pTHX) {\
 	OP* next = opcodes[OP_##TYPE](aTHX);\
 	if (autocroak_enabled()) {\
@@ -37,7 +38,7 @@ static OP* croak_##TYPE(pTHX) {\
 	return next;\
 }
 
-#define INC_WRAPPER_FT(TYPE, NAME) \
+#define FILETEST_WRAPPER(TYPE, NAME) \
 static OP* croak_##TYPE(pTHX) {\
 	dSP;\
 	SV* filename = TOPs;\
@@ -55,8 +56,8 @@ static OP* croak_##TYPE(pTHX) {\
 }
 
 #include "autocroak.inc"
-#undef INC_WRAPPER_FT
-#undef INC_WRAPPER
+#undef FILETEST_WRAPPER
+#undef UNDEFINED_WRAPPER
 
 static OP* croak_OPEN(pTHX) {
 	if (autocroak_enabled()) {
@@ -132,16 +133,17 @@ BOOT:
 	if (!initialized) {
 		initialized = 1;
 		PERL_HASH(pragma_hash, pragma_name, pragma_name_length);
-#define INC_WRAPPER(TYPE) \
+#define OPCODE_REPLACE(TYPE) \
 		opcodes[OP_##TYPE] = PL_ppaddr[OP_##TYPE];\
 		PL_ppaddr[OP_##TYPE] = croak_##TYPE;
-#define INC_WRAPPER_FT(TYPE, NAME) INC_WRAPPER(TYPE)
+#define UNDEFINED_WRAPPER(TYPE) OPCODE_REPLACE(TYPE)
+#define FILETEST_WRAPPER(TYPE, NAME) OPCODE_REPLACE(TYPE)
 #include "autocroak.inc"
-		INC_WRAPPER(OPEN)
-		INC_WRAPPER(SYSTEM)
-		INC_WRAPPER(PRINT)
-		INC_WRAPPER(FLOCK)
-#undef INC_WRAPPER_FT
-#undef INC_WRAPPER
+		OPCODE_REPLACE(OPEN)
+		OPCODE_REPLACE(SYSTEM)
+		OPCODE_REPLACE(PRINT)
+		OPCODE_REPLACE(FLOCK)
+#undef FILETEST_WRAPPER
+#undef UNDEFINED_WRAPPER
 	}
 	OP_CHECK_MUTEX_UNLOCK;
