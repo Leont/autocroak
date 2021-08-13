@@ -3,6 +3,7 @@
 #include "perl.h"
 #undef UNLINK
 #include "XSUB.h"
+#include "ppport.h"
 
 static Perl_ppaddr_t opcodes[OP_max];
 #define pragma_base "autocroak/"
