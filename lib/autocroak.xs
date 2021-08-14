@@ -41,7 +41,7 @@ static OP* croak_##TYPE(pTHX) {\
 		dSP;\
 		if (!SvOK(TOPs) && !allowed_for(TYPE, FALSE)) {\
 			SV* message = newSVpvs("Could not call ");\
-			sv_catpv(message, PL_op_name[OP_##TYPE]);\
+			sv_catpv(message, PL_op_desc[OP_##TYPE]);\
 			sv_catpvs(message, ": ");\
 			sv_caterror(message, errno);\
 			croak_sv(message);\
@@ -63,7 +63,7 @@ static OP* croak_##TYPE(pTHX) {\
 		if (got < expected && !allowed_for(TYPE, FALSE))\
 			if (expected == 1) {\
 				SV* message = newSVpvs("Could not ");\
-				sv_catpv(message, PL_op_name[OP_##TYPE]);\
+				sv_catpv(message, PL_op_desc[OP_##TYPE]);\
 				sv_catpvs(message, " '");\
 				sv_catsv(message, filename);\
 				sv_catpvs(message, "': ");\
@@ -71,7 +71,7 @@ static OP* croak_##TYPE(pTHX) {\
 				croak_sv(message);\
 			}\
 			else {\
-				SV* message = newSVpvf("Could not %s (%lu/%lu times): ", PL_op_name[OP_##TYPE], (expected-got) ,expected);\
+				SV* message = newSVpvf("Could not %s (%lu/%lu times): ", PL_op_desc[OP_##TYPE], (expected-got) ,expected);\
 				sv_caterror(message, errno);\
 				croak_sv(message);\
 			}\
@@ -79,7 +79,7 @@ static OP* croak_##TYPE(pTHX) {\
 	return next;\
 }
 
-#define FILETEST_WRAPPER(TYPE, NAME) \
+#define FILETEST_WRAPPER(TYPE) \
 static OP* croak_##TYPE(pTHX) {\
 	dSP;\
 	SV* filename = TOPs;\
@@ -87,7 +87,9 @@ static OP* croak_##TYPE(pTHX) {\
 	if (autocroak_enabled()) {\
 		SPAGAIN;\
 		if (!SvOK(TOPs) && !allowed_for(TYPE, TRUE)) {\
-				SV* message = newSVpvs("Could not " NAME " '");\
+				SV* message = newSVpvs("Could not ");\
+				sv_catpv(message, PL_op_desc[OP_##TYPE]);\
+				sv_catpvs(message, " '");\
 				sv_catsv(message, filename);\
 				sv_catpvs(message, "': ");\
 				sv_caterror(message, errno);\
@@ -193,7 +195,7 @@ BOOT:
 		PL_ppaddr[OP_##TYPE] = croak_##TYPE;
 #define UNDEFINED_WRAPPER(TYPE) OPCODE_REPLACE(TYPE)
 #define NUMERIC_WRAPPER(TYPE, OFFSET) OPCODE_REPLACE(TYPE)
-#define FILETEST_WRAPPER(TYPE, NAME) OPCODE_REPLACE(TYPE)
+#define FILETEST_WRAPPER(TYPE) OPCODE_REPLACE(TYPE)
 #include "autocroak.inc"
 		OPCODE_REPLACE(OPEN)
 		OPCODE_REPLACE(SYSTEM)
