@@ -40,6 +40,13 @@ bool S_errno_in_bitset(pTHX_ SV* arg, bool default_result) {
 
 #define throw_sv(message) croak_sv(sv_2mortal(message))
 
+#define sv_catfile_maybe(message, filename) \
+	if (SvPOK(filename)) {\
+		sv_catpvs(message, " '");\
+		sv_catsv(message, filename);\
+		sv_catpvs(message, "'");\
+	}\
+
 #define UNDEFINED_WRAPPER(TYPE)\
 static OP* croak_##TYPE(pTHX) {\
 	OP* next = opcodes[OP_##TYPE](aTHX);\
@@ -67,9 +74,8 @@ static OP* croak_##TYPE(pTHX) {\
 		if (!SvOK(TOPs) && !allowed_for(TYPE, FALSE)) {\
 			SV* message = newSVpvs("Could not ");\
 			sv_catpv(message, PL_op_desc[OP_##TYPE]);\
-			sv_catpvs(message, " on '");\
-			sv_catsv(message, filename);\
-			sv_catpvs(message, "': ");\
+			sv_catfile_maybe(message, filename);\
+			sv_catpvs(message, ": ");\
 			sv_caterror(message, errno);\
 			throw_sv(message);\
 		}\
@@ -92,9 +98,8 @@ static OP* croak_##TYPE(pTHX) {\
 			if (expected == 1) {\
 				SV* message = newSVpvs("Could not ");\
 				sv_catpv(message, PL_op_desc[OP_##TYPE]);\
-				sv_catpvs(message, " '");\
-				sv_catsv(message, filename);\
-				sv_catpvs(message, "': ");\
+				sv_catfile_maybe(message, filename);\
+				sv_catpvs(message, ": ");\
 				sv_caterror(message, errno);\
 				throw_sv(message);\
 			}\
@@ -117,9 +122,8 @@ static OP* croak_##TYPE(pTHX) {\
 		if (!SvOK(TOPs) && !allowed_for(TYPE, TRUE)) {\
 				SV* message = newSVpvs("Could not ");\
 				sv_catpv(message, PL_op_desc[OP_##TYPE]);\
-				sv_catpvs(message, " '");\
-				sv_catsv(message, filename);\
-				sv_catpvs(message, "': ");\
+				sv_catfile_maybe(message, filename);\
+				sv_catpvs(message, ": ");\
 				sv_caterror(message, errno);\
 				throw_sv(message);\
 		}\
@@ -138,17 +142,17 @@ static OP* croak_OPEN(pTHX) {
 		dSP;
 		dAXMARKI;
 		dITEMS;\
-		if (items == 3 && SvPOK(ST(2))) {
+		if (items == 3) {
 			SV* mode = ST(1);
 			SV* filename = ST(2);
 			OP* next = opcodes[OP_OPEN](aTHX);
 			SPAGAIN;
 			if (!SvOK(TOPs) && !allowed_for(OPEN, FALSE)) {
-				SV* message = newSVpvs("Could not open file '");
-				sv_catsv(message, filename); // this will handle unicode
-				sv_catpvs(message, "' with mode ");
+				SV* message = newSVpvs("Could not open file");
+				sv_catfile_maybe(message, filename);
+				sv_catpvs(message, " with mode '");
 				sv_catsv(message, mode);
-				sv_catpvs(message, ": ");
+				sv_catpvs(message, "': ");
 				sv_caterror(message, errno);
 				throw_sv(message);
 			}
