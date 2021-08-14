@@ -40,7 +40,7 @@ static OP* croak_##TYPE(pTHX) {\
 	if (autocroak_enabled()) {\
 		dSP;\
 		if (!SvOK(TOPs) && !allowed_for(TYPE, FALSE)) {\
-			SV* message = newSVpvs("Could not call ");\
+			SV* message = newSVpvs("Could not ");\
 			sv_catpv(message, PL_op_desc[OP_##TYPE]);\
 			sv_catpvs(message, ": ");\
 			sv_caterror(message, errno);\
