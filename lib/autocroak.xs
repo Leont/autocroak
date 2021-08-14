@@ -109,8 +109,8 @@ static OP* croak_OPEN(pTHX) {
 		dSP;
 		SV **mark = PL_stack_base + TOPMARK;
 		if (SP - MARK == 3 && SvPOK(MARK[3])) {
-			SV* mode = sv_2mortal(SvREFCNT_inc(MARK[2]));
-			SV* filename = sv_2mortal(SvREFCNT_inc(MARK[3]));
+			SV* mode = MARK[2];
+			SV* filename = MARK[3];
 			OP* next = opcodes[OP_OPEN](aTHX);
 			SPAGAIN;
 			if (!SvOK(TOPs) && !allowed_for(OPEN, FALSE)) {
