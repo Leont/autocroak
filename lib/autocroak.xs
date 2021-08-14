@@ -34,6 +34,10 @@ bool S_errno_in_bitset(pTHX_ SV* arg, bool default_result) {
 
 #define allowed_for(TYPE, default_result) S_errno_in_bitset(aTHX_ cop_hints_fetch_pvs(PL_curcop, pragma_base #TYPE, 0), default_result)
 
+#define dAXMARKI\
+	int ax = TOPMARK + 1;\
+	SV **mark = PL_stack_base + ax - 1;
+
 #define UNDEFINED_WRAPPER(TYPE)\
 static OP* croak_##TYPE(pTHX) {\
 	OP* next = opcodes[OP_##TYPE](aTHX);\
@@ -53,9 +57,10 @@ static OP* croak_##TYPE(pTHX) {\
 #define NUMERIC_WRAPPER(TYPE, OFFSET)\
 static OP* croak_##TYPE(pTHX) {\
 	dSP;\
-	SV **mark = PL_stack_base + TOPMARK;\
-	size_t expected = SP - MARK - OFFSET;\
-	SV* filename = expected == 1 ? MARK[1 + OFFSET] : NULL;\
+	dAXMARKI;\
+	dITEMS;\
+	size_t expected = items - OFFSET;\
+	SV* filename = expected == 1 ? ST(OFFSET) : NULL;\
 	OP* next = opcodes[OP_##TYPE](aTHX);\
 	if (autocroak_enabled()) {\
 		SPAGAIN;\
@@ -107,10 +112,11 @@ static OP* croak_##TYPE(pTHX) {\
 static OP* croak_OPEN(pTHX) {
 	if (autocroak_enabled()) {
 		dSP;
-		SV **mark = PL_stack_base + TOPMARK;
-		if (SP - MARK == 3 && SvPOK(MARK[3])) {
-			SV* mode = MARK[2];
-			SV* filename = MARK[3];
+		dAXMARKI;
+		dITEMS;\
+		if (items == 3 && SvPOK(ST(2))) {
+			SV* mode = ST(1);
+			SV* filename = ST(2);
 			OP* next = opcodes[OP_OPEN](aTHX);
 			SPAGAIN;
 			if (!SvOK(TOPs) && !allowed_for(OPEN, FALSE)) {
