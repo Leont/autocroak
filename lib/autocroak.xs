@@ -38,6 +38,8 @@ bool S_errno_in_bitset(pTHX_ SV* arg, bool default_result) {
 	int ax = TOPMARK + 1;\
 	SV **mark = PL_stack_base + ax - 1;
 
+#define throw_sv(message) croak_sv(sv_2mortal(message))
+
 #define UNDEFINED_WRAPPER(TYPE)\
 static OP* croak_##TYPE(pTHX) {\
 	OP* next = opcodes[OP_##TYPE](aTHX);\
@@ -48,7 +50,7 @@ static OP* croak_##TYPE(pTHX) {\
 			sv_catpv(message, PL_op_desc[OP_##TYPE]);\
 			sv_catpvs(message, ": ");\
 			sv_caterror(message, errno);\
-			croak_sv(message);\
+			throw_sv(message);\
 		}\
 	}\
 	return next;\
@@ -73,12 +75,12 @@ static OP* croak_##TYPE(pTHX) {\
 				sv_catsv(message, filename);\
 				sv_catpvs(message, "': ");\
 				sv_caterror(message, errno);\
-				croak_sv(message);\
+				throw_sv(message);\
 			}\
 			else {\
 				SV* message = newSVpvf("Could not %s (%lu/%lu times): ", PL_op_desc[OP_##TYPE], (expected-got) ,expected);\
 				sv_caterror(message, errno);\
-				croak_sv(message);\
+				throw_sv(message);\
 			}\
 	}\
 	return next;\
@@ -98,7 +100,7 @@ static OP* croak_##TYPE(pTHX) {\
 				sv_catsv(message, filename);\
 				sv_catpvs(message, "': ");\
 				sv_caterror(message, errno);\
-				croak_sv(message);\
+				throw_sv(message);\
 		}\
 	}\
 	return next;\
@@ -126,7 +128,7 @@ static OP* croak_OPEN(pTHX) {
 				sv_catsv(message, mode);
 				sv_catpvs(message, ": ");
 				sv_caterror(message, errno);
-				croak_sv(message);
+				throw_sv(message);
 			}
 			return next;
 		}
@@ -136,7 +138,7 @@ static OP* croak_OPEN(pTHX) {
 			if (!SvOK(TOPs) && !allowed_for(OPEN, FALSE)) {
 				SV* message = newSVpvs("Could not open: ");
 				sv_caterror(message, errno);
-				croak_sv(message);
+				throw_sv(message);
 			}
 			return next;
 		}
@@ -162,7 +164,7 @@ static OP* croak_PRINT(pTHX) {
 		if (!SvTRUE(TOPs) && !allowed_for(PRINT, FALSE)) {
 			SV* message = newSVpvs("Could not print: ");
 			sv_caterror(message, errno);
-			croak_sv(message);
+			throw_sv(message);
 		}
 	}
 	return next;
@@ -177,7 +179,7 @@ static OP* croak_FLOCK(pTHX) {
 		if (!SvOK(TOPs) && !allowed_for(FLOCK, non_blocking && errno == EAGAIN)) {
 			SV* message = newSVpvs("Could not flock: ");
 			sv_caterror(message, errno);
-			croak_sv(message);
+			throw_sv(message);
 		}
 		return next;
 	}
