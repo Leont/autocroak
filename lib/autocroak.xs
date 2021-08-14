@@ -213,6 +213,21 @@ static OP* croak_FLOCK(pTHX) {
 		return opcodes[OP_FLOCK](aTHX);
 }
 
+static OP* croak_SSELECT(pTHX) {
+	dSP;
+	dAXMARKI;
+	OP* next = opcodes[OP_SSELECT](aTHX);
+	if (autocroak_enabled()) {
+		SPAGAIN;
+		if (SvIV(ST(0)) < 0 && !allowed_for(SSELECT, FALSE)) {
+			SV* message = newSVpvs("Could not select: ");
+			sv_caterror(message, errno);
+			throw_sv(message);
+		}
+	}
+	return next;
+}
+
 static unsigned initialized;
 
 MODULE = autocroak				PACKAGE = autocroak
@@ -236,6 +251,7 @@ BOOT:
 		OPCODE_REPLACE(SYSTEM)
 		OPCODE_REPLACE(PRINT)
 		OPCODE_REPLACE(FLOCK)
+		OPCODE_REPLACE(SSELECT)
 #undef FILETEST_WRAPPER
 #undef NUMERIC_WRAPPER
 #undef UNDEFINED_FILE_WRAPPER

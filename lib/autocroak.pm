@@ -180,6 +180,8 @@ Note: B<This is an early release, the exception messages as well as types will l
 
 =item * closedir
 
+=item * select
+
 =item * do
 
 =item * dbmopen
