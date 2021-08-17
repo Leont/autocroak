@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::Fatal;
 
 use Socket;
 use File::Temp;
@@ -13,51 +14,49 @@ use lib "$FindBin::Bin/lib";
 use AutocroakTestUtils;
 
 subtest ebadf => sub {
-    use autocroak;
+	use autocroak;
 
-    socket my $s, Socket::AF_INET, Socket::SOCK_STREAM, 0;
-    my $fd = fileno $s;
+	socket my $s, Socket::AF_INET, Socket::SOCK_STREAM, 0;
+	my $fd = fileno $s;
 
-    vec( my $rin, $fd, 1) = 1;
+	vec( my $rin, $fd, 1) = 1;
 
-    close $s;
+	close $s;
 
-    eval { select $rin, undef, undef, 0 };
-    my $err = $@;
+	my $err = exception { select $rin, undef, undef, 0 };
 
-    my $errstr = AutocroakTestUtils::get_errno_string('EBADF');
+	my $errstr = AutocroakTestUtils::get_errno_string('EBADF');
 
-    like( $err, qr<select>, 'void context' );
-    like( $err, qr<\Q$errstr\E> );
+	like( $err, qr<select>, 'void context' );
+	like( $err, qr<\Q$errstr\E> );
 
-    #----------------------------------------------------------------------
+	#----------------------------------------------------------------------
 
-    eval { () = select $rin, undef, undef, 0 };
-    my $err = $@;
+	$err = exception { () = select $rin, undef, undef, 0 };
 
-    $errstr = AutocroakTestUtils::get_errno_string('EBADF');
+	$errstr = AutocroakTestUtils::get_errno_string('EBADF');
 
-    like( $err, qr<select>, 'list context' );
-    like( $err, qr<\Q$errstr\E> );
+	like( $err, qr<select>, 'list context' );
+	like( $err, qr<\Q$errstr\E> );
 };
 
 subtest success => sub {
-    use autocroak;
+	use autocroak;
 
-    my $fh = File::Temp::tempfile();
-    my $fd = fileno $fh;
+	my $fh = File::Temp::tempfile();
+	my $fd = fileno $fh;
 
-    vec( my $rin, $fd, 1) = 1;
+	is(exception { 
+		vec( my $rin, $fd, 1) = 1;
+		my $got = select $rin, undef, undef, 0;
+		is $got, 1, 'scalar context return 1';
+	}, undef, 'scalar context lives');
 
-    my $got = select $rin, undef, undef, 0;
-
-    is $got, 1, 'scalar context';
-
-    vec( $rin, $fd, 1) = 1;
-
-    ($got) = select $rin, undef, undef, 0;
-
-    is $got, 1, 'list context';
+	is(exception {
+		vec( my $rin, $fd, 1) = 1;
+		my ($got) = select $rin, undef, undef, 0;
+		is $got, 1, 'list context returns 1';
+	}, undef, 'list context lives');
 };
 
 done_testing;

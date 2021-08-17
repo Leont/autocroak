@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::Fatal;
 use Errno 'ENOENT';
 
 use FindBin;
@@ -29,22 +30,21 @@ subtest success => sub {
 subtest basic => sub {
 	use autocroak;
 	my $enoent = AutocroakTestUtils::get_errno_string('ENOENT');
-	eval {
+	my $err = exception {
 		sysopen my $fh, 'nonexistent', Fcntl::O_RDONLY;
 	};
-	my $err = $@;
 	like( $err, qr<sysopen> );
 	like( $err, qr<\Q$enoent\E> );
 };
 
 subtest allow => sub {
 	use autocroak allow => { sysopen => ENOENT };
-	my $ret = eval {
-		sysopen my $fh, 'nonexistent', Fcntl::O_RDONLY;
+	my $ex = exception {
+		my $ret = sysopen my $fh, 'nonexistent', Fcntl::O_RDONLY;
+		is($ret, undef);
 	};
-	is($@, '');
+	is($ex, undef);
 	is($!+0, ENOENT);
-	is($ret, undef);
 };
 
 done_testing;

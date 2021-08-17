@@ -4,24 +4,24 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::Fatal 'exception';
 use Errno 'ENOENT';
 
 subtest basic => sub {
 	use autocroak;
-	eval {
+	my $ex = exception {
 		open my $fh, '<', 'nonexistent';
 	};
-	like $@, qr/Could not open file 'nonexistent' with mode '<': No such/;
+	like $ex, qr/Could not open file 'nonexistent' with mode '<': No such/;
 };
 
 subtest allow => sub {
 	use autocroak allow => { open => ENOENT };
-	my $ret = eval {
-		open my $fh, '<', 'nonexistent';
+	my $ex = exception {
+		is(open(my $fh, '<', 'nonexistent'), undef);
 	};
-	is($@, '');
+	is($ex, undef);
 	is($!+0, ENOENT);
-	is($ret, undef);
 };
 
 done_testing;

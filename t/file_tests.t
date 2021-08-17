@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::Fatal;
 use Errno 'ENOENT';
 
 use FindBin;
@@ -14,27 +15,26 @@ use AutocroakTestUtils;
 use Fcntl;
 
 subtest enotdir => sub {
-    use autocroak allow => { -e => ENOENT };
+	use autocroak allow => { -e => ENOENT };
 
-    my ($tfh, $tpath) = File::Temp::tempfile( CLEANUP => 1 );
+	my ($tfh, $tpath) = File::Temp::tempfile( CLEANUP => 1 );
 
-    my $enotdir  = AutocroakTestUtils::get_errno_string('ENOTDIR');
+	my $enotdir  = AutocroakTestUtils::get_errno_string('ENOTDIR');
 
-    eval { -e "$tpath/notthere" };
-    my $err = $@;
+	my $err = exception { -e "$tpath/notthere" };
 
-    like( $err, qr<-e> );
-    like( $err, qr<\Q$enotdir\E> );
+	like( $err, qr<-e> );
+	like( $err, qr<\Q$enotdir\E> );
 };
 
 subtest no_error => sub {
-    use autocroak allow => { -e => ENOENT };
+	use autocroak allow => { -e => ENOENT };
 
-    my $tdir = File::Temp::tempdir( CLEANUP => 1 );
+	my $tdir = File::Temp::tempdir( CLEANUP => 1 );
 
-    ok( (-e $tdir), 'exists == success' );
+	is(exception { ok( (-e $tdir), 'exists == success' ) }, undef);
 
-    ok( !(-e "$tdir/notthere"), 'nonexistence isn’t an error' );
+	is(exception { ok( !(-e "$tdir/notthere"), 'nonexistence isn’t an error' ) }, undef);
 };
 
 done_testing;
