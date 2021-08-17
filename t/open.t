@@ -4,7 +4,9 @@ use strict;
 use warnings;
 
 use Test::More;
-use Test::Fatal 'exception';
+use Test::Fatal;
+use lib 't/lib';
+use TestUtils;
 use Errno 'ENOENT';
 
 subtest basic => sub {
@@ -12,7 +14,7 @@ subtest basic => sub {
 	my $ex = exception {
 		open my $fh, '<', 'nonexistent';
 	};
-	like $ex, qr/Could not open file 'nonexistent' with mode '<': No such/;
+	like($ex, error_for("open file 'nonexistent' with mode '<'", ENOENT));
 };
 
 subtest allow => sub {

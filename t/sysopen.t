@@ -29,12 +29,10 @@ subtest success => sub {
 
 subtest basic => sub {
 	use autocroak;
-	my $enoent = TestUtils::get_errno_string('ENOENT');
 	my $err = exception {
 		sysopen my $fh, 'nonexistent', Fcntl::O_RDONLY;
 	};
-	like( $err, qr<sysopen> );
-	like( $err, qr<\Q$enoent\E> );
+	like($err, error_for("sysopen 'nonexistent'", ENOENT));
 };
 
 subtest allow => sub {
@@ -42,9 +40,9 @@ subtest allow => sub {
 	my $ex = exception {
 		my $ret = sysopen my $fh, 'nonexistent', Fcntl::O_RDONLY;
 		is($ret, undef);
+		is($!+0, ENOENT);
 	};
 	is($ex, undef);
-	is($!+0, ENOENT);
 };
 
 done_testing;

@@ -8,6 +8,7 @@ use Test::Fatal;
 
 use Socket;
 use File::Temp;
+use Errno 'EBADF';
 
 use FindBin;
 use lib "$FindBin::Bin/lib";
@@ -24,20 +25,12 @@ subtest ebadf => sub {
 	close $s;
 
 	my $err = exception { select $rin, undef, undef, 0 };
-
-	my $errstr = TestUtils::get_errno_string('EBADF');
-
-	like( $err, qr<select>, 'void context' );
-	like( $err, qr<\Q$errstr\E> );
+	like($err, error_for('select', EBADF), 'void context' );
 
 	#----------------------------------------------------------------------
 
 	$err = exception { () = select $rin, undef, undef, 0 };
-
-	$errstr = TestUtils::get_errno_string('EBADF');
-
-	like( $err, qr<select>, 'list context' );
-	like( $err, qr<\Q$errstr\E> );
+	like($err, error_for('select', EBADF), 'list context');
 };
 
 subtest success => sub {

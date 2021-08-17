@@ -5,7 +5,7 @@ use warnings;
 
 use Test::More;
 use Test::Fatal;
-use Errno 'ENOENT';
+use Errno qw/ENOENT ENOTDIR/;
 
 use FindBin;
 use File::Temp;
@@ -17,12 +17,9 @@ subtest enotdir => sub {
 
 	my ($tfh, $tpath) = File::Temp::tempfile( CLEANUP => 1 );
 
-	my $enotdir  = TestUtils::get_errno_string('ENOTDIR');
-
 	my $err = exception { -e "$tpath/notthere" };
 
-	like( $err, qr<-e> );
-	like( $err, qr<\Q$enotdir\E> );
+	like($err, error_for("-e '$tpath/notthere'", ENOTDIR));
 };
 
 subtest no_error => sub {
