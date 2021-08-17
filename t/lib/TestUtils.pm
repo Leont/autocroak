@@ -1,4 +1,4 @@
-package AutocroakTestUtils;
+package TestUtils;
 
 use strict;
 use warnings;

@@ -11,7 +11,7 @@ use File::Temp;
 
 use FindBin;
 use lib "$FindBin::Bin/lib";
-use AutocroakTestUtils;
+use TestUtils;
 
 subtest ebadf => sub {
 	use autocroak;
@@ -25,7 +25,7 @@ subtest ebadf => sub {
 
 	my $err = exception { select $rin, undef, undef, 0 };
 
-	my $errstr = AutocroakTestUtils::get_errno_string('EBADF');
+	my $errstr = TestUtils::get_errno_string('EBADF');
 
 	like( $err, qr<select>, 'void context' );
 	like( $err, qr<\Q$errstr\E> );
@@ -34,7 +34,7 @@ subtest ebadf => sub {
 
 	$err = exception { () = select $rin, undef, undef, 0 };
 
-	$errstr = AutocroakTestUtils::get_errno_string('EBADF');
+	$errstr = TestUtils::get_errno_string('EBADF');
 
 	like( $err, qr<select>, 'list context' );
 	like( $err, qr<\Q$errstr\E> );

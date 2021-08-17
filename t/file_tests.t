@@ -10,16 +10,14 @@ use Errno 'ENOENT';
 use FindBin;
 use File::Temp;
 use lib "$FindBin::Bin/lib";
-use AutocroakTestUtils;
-
-use Fcntl;
+use TestUtils;
 
 subtest enotdir => sub {
 	use autocroak allow => { -e => ENOENT };
 
 	my ($tfh, $tpath) = File::Temp::tempfile( CLEANUP => 1 );
 
-	my $enotdir  = AutocroakTestUtils::get_errno_string('ENOTDIR');
+	my $enotdir  = TestUtils::get_errno_string('ENOTDIR');
 
 	my $err = exception { -e "$tpath/notthere" };
 

@@ -10,7 +10,7 @@ use Errno 'ENOENT';
 use FindBin;
 use File::Temp;
 use lib "$FindBin::Bin/lib";
-use AutocroakTestUtils;
+use TestUtils;
 
 use Fcntl;
 
@@ -29,7 +29,7 @@ subtest success => sub {
 
 subtest basic => sub {
 	use autocroak;
-	my $enoent = AutocroakTestUtils::get_errno_string('ENOENT');
+	my $enoent = TestUtils::get_errno_string('ENOENT');
 	my $err = exception {
 		sysopen my $fh, 'nonexistent', Fcntl::O_RDONLY;
 	};
