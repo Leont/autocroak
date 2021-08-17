@@ -11,7 +11,7 @@ subtest basic => sub {
 	eval {
 		open my $fh, '<', 'nonexistent';
 	};
-	like $@, qr/Could not open file 'nonexistent' with mode <: No such/;
+	like $@, qr/Could not open file 'nonexistent' with mode '<': No such/;
 };
 
 subtest allow => sub {
