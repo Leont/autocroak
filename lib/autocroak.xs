@@ -5,6 +5,8 @@
 #include "XSUB.h"
 #include "ppport.h"
 
+#include <sys/wait.h>
+
 static Perl_ppaddr_t opcodes[OP_max];
 #define pragma_base "autocroak/"
 #define pragma_name pragma_base "enabled"
@@ -177,8 +179,29 @@ static OP* croak_SYSTEM(pTHX) {
 	OP* next = opcodes[OP_SYSTEM](aTHX);
 	if (autocroak_enabled()) {
 		dSP;
-		if (SvTRUE(TOPs) && !allowed_for(SYSTEM, FALSE))
-			Perl_croak(aTHX_ "Can't call system: it returned %" UVuf, SvUV(TOPs));
+		if (SvTRUE(TOPs) && !allowed_for(SYSTEM, FALSE)) {
+			int status = SvIV(TOPs);
+			SV* message;
+			if (status > 0) {
+				message = newSVpvs("Call to system failed: ");
+				if (WIFEXITED(status)) {
+					sv_catpvf(message, "exited %d", WEXITSTATUS(status));
+				}
+				else if (WIFSIGNALED(status)) {
+					int signum = WTERMSIG(status);
+					sv_catpvf(message, "got signal (%s)", strsignal(signum));
+				}
+				else {
+					assert(0);
+				}
+			}
+			else {
+				message = newSVpvs("Can't call system: ");
+				sv_caterror(message, errno);
+			}
+
+			throw_sv(message);
+		}
 	}
 	return next;
 }
