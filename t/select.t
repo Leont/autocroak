@@ -33,7 +33,7 @@ subtest ebadf => sub {
     #----------------------------------------------------------------------
 
     eval { () = select $rin, undef, undef, 0 };
-    my $err = $@;
+    $err = $@;
 
     $errstr = AutocroakTestUtils::get_errno_string('EBADF');
 
