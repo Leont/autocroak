@@ -184,16 +184,23 @@ static OP* croak_SYSTEM(pTHX) {
 			SV* message;
 			if (status > 0) {
 				message = newSVpvs("Call to system failed: ");
+#ifdef WIFEXITED
 				if (WIFEXITED(status)) {
 					sv_catpvf(message, "exited %d", WEXITSTATUS(status));
 				}
 				else if (WIFSIGNALED(status)) {
 					int signum = WTERMSIG(status);
 					sv_catpvf(message, "got signal (%s)", strsignal(signum));
+#ifdef WCOREDUMP
+					if (WCOREDUMP(status)) sv_catpvf(message, ", dumped core");
+#endif
 				}
 				else {
 					assert(0);
 				}
+#else
+				sv_catpvf(message, "returned %d", status);
+#endif
 			}
 			else {
 				message = newSVpvs("Can't call system: ");
