@@ -174,13 +174,48 @@ static OP* croak_OPEN(pTHX) {
 }
 
 static OP* croak_SYSTEM(pTHX) {
-	OP* next = opcodes[OP_SYSTEM](aTHX);
 	if (autocroak_enabled()) {
 		dSP;
-		if (SvTRUE(TOPs) && !allowed_for(SYSTEM, FALSE))
-			Perl_croak(aTHX_ "Can't call system: it returned %" UVuf, SvUV(TOPs));
+		dAXMARKI;
+		dITEMS;
+
+		SV* arguments = newSVpvs("");
+		for (int i = 0; i < items; ++i) {
+			SV* element = ST(i);
+			if (i)
+				sv_catpvs(arguments, " ");
+			sv_catsv(arguments, element);
+		}
+		OP* next = opcodes[OP_SYSTEM](aTHX);
+		SPAGAIN;
+		int waitstatus = POPi;
+		if (waitstatus != 0 && !allowed_for(SYSTEM, FALSE)) {
+			SV* message = newSVpvs("Could not call system \"");
+			sv_catsv(message, arguments);
+			sv_catpvs(message, "\": ");
+			if (waitstatus < 0) {
+				sv_caterror(message, errno);
+			}
+			else if (WIFEXITED(waitstatus)) {
+				sv_catpvf(message, "unexpectedly returned exit value %d", WEXITSTATUS(waitstatus));
+			}
+			else if (WIFSIGNALED(waitstatus)) {
+				sv_catpvs(message, "died with signal ");
+				sv_catpv(message, PL_sig_name[WTERMSIG(waitstatus)]);
+#ifdef WCOREDUMP
+				if (WCOREDUMP(waitstatus))
+					sv_catpvs(message, " and dumped core");
+#endif
+			}
+			else
+				sv_catpvs(message, "unknown error");
+
+			throw_sv(message);
+		}
+		return next;
 	}
-	return next;
+	else
+		return opcodes[OP_SYSTEM](aTHX);
 }
 
 static OP* croak_PRINT(pTHX) {

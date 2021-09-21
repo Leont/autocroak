@@ -12,9 +12,9 @@ sub error_for {
 		local $! = $errno;
 		"$!";
 	};
-	my $message = "Could not $head: $errno_message";
+	my $message = qr/Could not $head: \Q$errno_message/;
 	my $file = (caller(0))[1];
-	return qr/^\Q$message at $file\E line \d+.$/;
+	return qr/^$message at \Q$file\E line \d+.$/;
 }
 
 1;
