@@ -92,7 +92,7 @@ Optionally you can pass it an allow hash listing errors that are allowed for cer
 
  use autocroak allow => { unlink => ENOENT };
 
-Note: B<This is an early release, the exception messages as well as types will likely change in the future, do not depend on this yet>.
+Note: B<This is an early release, the exception messages as well as types may change in the future, do not depend on this yet>.
 
 =head2 Supported keywords:
 
