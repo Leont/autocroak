@@ -182,8 +182,6 @@ Note: B<This is an early release, the exception messages as well as types will l
 
 =item * select
 
-=item * do
-
 =item * dbmopen
 
 =item * dbmclose
