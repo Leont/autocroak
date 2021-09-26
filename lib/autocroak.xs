@@ -231,23 +231,6 @@ static OP* croak_PRINT(pTHX) {
 	return next;
 }
 
-static OP* croak_FLOCK(pTHX) {
-	if (autocroak_enabled()) {
-		dSP;
-		int non_blocking = TOPu & LOCK_NB;
-		OP* next = opcodes[OP_FLOCK](aTHX);
-		SPAGAIN;
-		if (!SvOK(TOPs) && !allowed_for(FLOCK, non_blocking && errno == EAGAIN)) {
-			SV* message = newSVpvs("Could not flock: ");
-			sv_caterror(message, errno);
-			throw_sv(message);
-		}
-		return next;
-	}
-	else
-		return opcodes[OP_FLOCK](aTHX);
-}
-
 static OP* croak_SSELECT(pTHX) {
 	dSP;
 	dAXMARKI;
@@ -285,7 +268,6 @@ BOOT:
 		OPCODE_REPLACE(OPEN)
 		OPCODE_REPLACE(SYSTEM)
 		OPCODE_REPLACE(PRINT)
-		OPCODE_REPLACE(FLOCK)
 		OPCODE_REPLACE(SSELECT)
 #undef FILETEST_WRAPPER
 #undef NUMERIC_WRAPPER
