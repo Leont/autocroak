@@ -1,5 +1,4 @@
 package autocroak;
-our $VERSION = 0.001;
 
 use strict;
 use warnings;
