@@ -77,7 +77,7 @@ sub unimport {
 =head1 SYNOPSIS
 
  use autocroak;
- 
+
  open(my $fh, '<', $filename); # No need to check!
  print "Hello World"; # No need to check either
 
@@ -97,97 +97,53 @@ Note: B<This is an early release, the exception messages as well as types may ch
 
 =over 4
 
-=item * open
-
-=item * sysopen
-
-=item * close
-
-=item * system
-
-=item * print
-
-=item * flock
-
-=item * truncate
-
-=item * exec
-
-=item * fork
-
-=item * fcntl
-
-=item * binmode
-
-=item * ioctl
-
-=item * pipe
-
-=item * kill
+=item * accept
 
 =item * bind
 
-=item * connect
-
-=item * listen
-
-=item * setsockopt
-
-=item * accept
-
-=item * getsockopt
-
-=item * shutdown
-
-=item * sockpair
-
-=item * read
-
-=item * recv
-
-=item * sysread
-
-=item * syswrite
-
-=item * stat
+=item * binmode
 
 =item * chdir
+
+=item * chmod
 
 =item * chown
 
 =item * chroot
 
-=item * unlink
-
-=item * chmod
-
-=item * utime
-
-=item * rename
-
-=item * link
-
-=item * symlink
-
-=item * readlink
-
-=item * mkdir
-
-=item * rmdir
-
-=item * opendir
+=item * close
 
 =item * closedir
 
-=item * select
+=item * connect
+
+=item * dbmclose
 
 =item * dbmopen
 
-=item * dbmclose
+=item * exec
+
+=item * fcntl
+
+=item * flock
+
+=item * fork
 
 =item * gethostbyaddr
 
 =item * getnetbyaddr
+
+=item * getsockopt
+
+=item * ioctl
+
+=item * kill
+
+=item * link
+
+=item * listen
+
+=item * mkdir
 
 =item * msgctl
 
@@ -197,11 +153,33 @@ Note: B<This is an early release, the exception messages as well as types may ch
 
 =item * msgsnd
 
+=item * open
+
+=item * opendir
+
+=item * pipe
+
+=item * print
+
+=item * read
+
+=item * readlink
+
+=item * recv
+
+=item * rename
+
+=item * rmdir
+
+=item * select
+
 =item * semctl
 
 =item * semget
 
 =item * semop
+
+=item * setsockopt
 
 =item * shmctl
 
@@ -209,47 +187,43 @@ Note: B<This is an early release, the exception messages as well as types may ch
 
 =item * shmread
 
-=item * C<-R>
+=item * shutdown
 
-=item * C<-W>
+=item * sockpair
 
-=item * C<-X>
+=item * stat
 
-=item * C<-r>
+=item * symlink
 
-=item * C<-w>
+=item * sysopen
 
-=item * C<-x>
+=item * sysread
 
-=item * C<-e>
+=item * system
 
-=item * C<-s>
+=item * syswrite
 
-=item * C<-M>
+=item * truncate
 
-=item * C<-C>
+=item * unlink
+
+=item * utime
 
 =item * C<-A>
 
-=item * C<-O>
-
-=item * C<-o>
-
-=item * C<-z>
-
-=item * C<-S>
-
-=item * C<-c>
+=item * C<-B>
 
 =item * C<-b>
 
-=item * C<-f>
+=item * C<-C>
+
+=item * C<-c>
 
 =item * C<-d>
 
-=item * C<-p>
+=item * C<-e>
 
-=item * C<-u>
+=item * C<-f>
 
 =item * C<-g>
 
@@ -257,10 +231,36 @@ Note: B<This is an early release, the exception messages as well as types may ch
 
 =item * C<-l>
 
-=item * C<-t>
+=item * C<-M>
+
+=item * C<-O>
+
+=item * C<-o>
+
+=item * C<-p>
+
+=item * C<-R>
+
+=item * C<-r>
+
+=item * C<-S>
+
+=item * C<-s>
 
 =item * C<-T>
 
-=item * C<-B>
+=item * C<-t>
+
+=item * C<-u>
+
+=item * C<-W>
+
+=item * C<-w>
+
+=item * C<-X>
+
+=item * C<-x>
+
+=item * C<-z>
 
 =back
