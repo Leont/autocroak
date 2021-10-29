@@ -204,6 +204,7 @@ static OP* croak_SYSTEM(pTHX) {
 			if (waitstatus < 0) {
 				sv_caterror(message, errno);
 			}
+#ifdef WIFEXITED
 			else if (WIFEXITED(waitstatus)) {
 				sv_catpvf(message, "unexpectedly returned exit value %d", WEXITSTATUS(waitstatus));
 			}
@@ -215,8 +216,10 @@ static OP* croak_SYSTEM(pTHX) {
 					sv_catpvs(message, " and dumped core");
 #endif
 			}
+#else
 			else
-				sv_catpvs(message, "unknown error");
+				sv_catpvf(message, "returned %d", waitstatus);
+#endif
 
 			throw_sv(message);
 		}
