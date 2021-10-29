@@ -1,6 +1,8 @@
 Revision history for autocroak
 
 {{$NEXT}}
+
+0.002     2021-10-29 14:43:43+02:00 Europe/Amsterdam
           - Fix locale handling on perls before 5.26
           - Allow systems without WIFEXIT (e.g. Windows)
 
