@@ -5,6 +5,11 @@
 #include "XSUB.h"
 #include "ppport.h"
 
+#ifndef OP_CHECK_MUTEX_LOCK
+#define OP_CHECK_MUTEX_LOCK   NOOP
+#define OP_CHECK_MUTEX_UNLOCK NOOP
+#endif
+
 static Perl_ppaddr_t opcodes[OP_max];
 #define pragma_base "autocroak/"
 #define pragma_name pragma_base "enabled"
