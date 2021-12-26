@@ -1,6 +1,8 @@
 Revision history for autocroak
 
 {{$NEXT}}
+
+0.004     2021-12-26 14:47:04+01:00 Europe/Amsterdam
           - Fix more test failures on Windows
 
 0.003     2021-12-25 11:41:14+01:00 Europe/Amsterdam
