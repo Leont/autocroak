@@ -1,6 +1,7 @@
 Revision history for autocroak
 
 {{$NEXT}}
+          - Fix more test failures on Windows
 
 0.003     2021-12-25 11:41:14+01:00 Europe/Amsterdam
           - Fix C89 compilation issues

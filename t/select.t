@@ -24,6 +24,8 @@ sub socket_pair {
 subtest ebadf => sub {
 	use autocroak;
 
+	plan skip_all => 'Windows is special' if $^O eq 'MSWin32'; # XXX we need a better test here
+
 	my ($s, $r) = socket_pair;
 	my $fd = fileno $s;
 

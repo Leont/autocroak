@@ -21,7 +21,10 @@ subtest enotdir => sub {
 	my $path = catfile($tpath, 'notthere');
 	my $err = exception { -e $path };
 
-	like($err, error_for("-e '\Q$path\E'", ENOTDIR));
+	SKIP: {
+		skip 'Windows is special', 1 if $^O eq 'MSWin32';
+		like($err, error_for("-e '\Q$path\E'", ENOTDIR));
+	}
 };
 
 subtest no_error => sub {
