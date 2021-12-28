@@ -17,7 +17,9 @@ use TestUtils;
 
 sub socket_pair {
 	my $listen = IO::Socket::INET->new(Listen => 10) or die $!;
-	my $connecting = IO::Socket::INET->new(PeerAddr => $listen->sockhost, PeerPort => $listen->sockport) or die $!;
+	my $addr = $listen->sockhost;
+	$addr = "localhost" if $^O eq 'MSWin32' and $addr eq "0.0.0.0";
+	my $connecting = IO::Socket::INET->new(PeerAddr => $addr, PeerPort => $listen->sockport) or die $!;
 	return ($connecting, $listen->accept);
 }
 
