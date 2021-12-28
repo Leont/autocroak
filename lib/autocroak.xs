@@ -16,6 +16,11 @@ static Perl_ppaddr_t opcodes[OP_max];
 #define pragma_name_length (sizeof(pragma_name) - 1)
 static U32 pragma_hash;
 
+#ifndef cop_hints_fetch_pvn
+#	define cop_hints_fetch_pvn(cop, key, len, hash, flags) Perl_refcounted_he_fetch(aTHX_ cop->cop_hints_hash, NULL, key, len, flags, hash)
+#	define cop_hints_fetch_pvs(cop, key, flags) Perl_refcounted_he_fetch(aTHX_ cop->cop_hints_hash, NULL, STR_WITH_LEN(key), flags, 0)
+#endif
+
 #ifndef cop_hints_exists_pvn
 #	if PERL_VERSION_GE(5, 16, 0)
 #		define cop_hints_exists_pvn(cop, key, len, hash, flags) cop_hints_fetch_pvn(cop, key, len, hash, flags | 0x02)
