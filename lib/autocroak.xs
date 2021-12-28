@@ -17,7 +17,11 @@ static Perl_ppaddr_t opcodes[OP_max];
 static U32 pragma_hash;
 
 #ifndef cop_hints_exists_pvn
-#define cop_hints_exists_pvn(cop, key, len, hash, flags) cop_hints_fetch_pvn(cop, key, len, hash, flags | 0x02)
+#	if PERL_VERSION_GE(5, 16, 0)
+#		define cop_hints_exists_pvn(cop, key, len, hash, flags) cop_hints_fetch_pvn(cop, key, len, hash, flags | 0x02)
+#	else
+#		define cop_hints_exists_pvn(cop, key, len, hash, flags) (cop_hints_fetch_pvn(cop, key, len, hash, flags) != &PL_sv_placeholder)
+#	endif
 #endif
 
 #ifndef sv_string_from_errnum
