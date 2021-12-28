@@ -16,10 +16,8 @@ use lib "$FindBin::Bin/lib";
 use TestUtils;
 
 sub socket_pair {
-	my $listen = IO::Socket::INET->new(Listen => 10) or die $!;
-	my $addr = $listen->sockhost;
-	$addr = "localhost" if $^O eq 'MSWin32' and $addr eq "0.0.0.0";
-	my $connecting = IO::Socket::INET->new(PeerAddr => $addr, PeerPort => $listen->sockport) or die $!;
+	my $listen = IO::Socket::INET->new(LocalAddr => "localhost", Listen => 10) or die $!;
+	my $connecting = IO::Socket::INET->new(PeerHost => "localhost", PeerPort => $listen->sockport) or die $!;
 	return ($connecting, $listen->accept);
 }
 

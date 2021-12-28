@@ -1,6 +1,7 @@
 Revision history for autocroak
 
 {{$NEXT}}
+          - Force select test socket to localhost
 
 0.004     2021-12-26 14:47:04+01:00 Europe/Amsterdam
           - Fix more test failures on Windows
