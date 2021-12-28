@@ -29,7 +29,7 @@ subtest ebadf => sub {
 	my ($s, $r) = socket_pair;
 	my $fd = fileno $s;
 
-	vec( my $rin, $fd, 1) = 1;
+	vec( my $rin = '', $fd, 1) = 1;
 
 	close $s;
 
@@ -50,13 +50,13 @@ subtest success => sub {
 	my $fd = fileno $read;
 
 	is(exception { 
-		vec( my $rin, $fd, 1) = 1;
+		vec( my $rin = '', $fd, 1) = 1;
 		my $got = select $rin, undef, undef, 0;
 		is $got, 1, 'scalar context return 1';
 	}, undef, 'scalar context lives');
 
 	is(exception {
-		vec( my $rin, $fd, 1) = 1;
+		vec( my $rin = '', $fd, 1) = 1;
 		my ($got) = select $rin, undef, undef, 0;
 		is $got, 1, 'list context returns 1';
 	}, undef, 'list context lives');
