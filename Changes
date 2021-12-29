@@ -1,6 +1,7 @@
 Revision history for autocroak
 
 {{$NEXT}}
+          - Specialize kill opcode
 
 0.005     2021-12-28 17:24:59+01:00 Europe/Amsterdam
           - Force select test socket to localhost
