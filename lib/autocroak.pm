@@ -85,7 +85,7 @@ sub unimport {
 
 The autocroak pragma provides a convenient way to replace functions that normally return false on failure with equivalents that throw an exception on failure.
 
-The autocroak pragma has lexical scope, meaning that functions and subroutines altered with autodie will only change their behaviour until the end of the enclosing block, file, or eval.
+The autocroak pragma has lexical scope, meaning that functions and subroutines altered with autocroak will only change their behaviour until the end of the enclosing block, file, or eval.
 
 Optionally you can pass it an allow hash listing errors that are allowed for certain op:
 
