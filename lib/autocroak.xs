@@ -62,7 +62,8 @@ bool S_errno_in_bitset(pTHX_ SV* arg, bool default_result) {
 
 #define dAXMARKI\
 	int ax = TOPMARK + 1;\
-	SV **mark = PL_stack_base + ax - 1;
+	SV **mark = PL_stack_base + ax - 1;\
+	dITEMS
 
 #define throw_sv(message) croak_sv(sv_2mortal(message))
 
@@ -112,7 +113,6 @@ static OP* croak_##TYPE(pTHX) {\
 static OP* croak_##TYPE(pTHX) {\
 	dSP;\
 	dAXMARKI;\
-	dITEMS;\
 	size_t expected = items - OFFSET;\
 	SV* filename = expected == 1 ? ST(OFFSET) : NULL;\
 	OP* next = opcodes[OP_##TYPE](aTHX);\
@@ -166,7 +166,6 @@ static OP* croak_OPEN(pTHX) {
 	if (autocroak_enabled()) {
 		dSP;
 		dAXMARKI;
-		dITEMS;\
 		if (items == 3) {
 			SV* mode = ST(1);
 			SV* filename = ST(2);
@@ -202,7 +201,6 @@ static OP* croak_SYSTEM(pTHX) {
 	if (autocroak_enabled()) {
 		dSP;
 		dAXMARKI;
-		dITEMS;
 
 		SV* arguments = newSVpvs("");
 		int i;
@@ -278,7 +276,6 @@ static OP* croak_SSELECT(pTHX) {
 static OP* croak_KILL(pTHX) {
 	dSP;
 	dAXMARKI;
-	dITEMS;
 	size_t expected = items - 1;
 	IV signal = SvIOK(ST(0)) ? SvIV(ST(0)) : -1;
 	SV* procname = expected == 1 ? ST(1) : NULL;
