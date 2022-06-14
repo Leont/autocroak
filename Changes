@@ -1,6 +1,7 @@
 Revision history for autocroak
 
 {{$NEXT}}
+          - Fix compilation on 5.10.0
 
 0.006     2022-01-22 17:28:08+01:00 Europe/Amsterdam
           - Specialize kill opcode

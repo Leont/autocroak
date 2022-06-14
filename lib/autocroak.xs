@@ -30,9 +30,13 @@ static U32 pragma_hash;
 #endif
 
 #ifndef sv_string_from_errnum
+#ifndef dSAVE_ERRNO
+#   define dSAVE_ERRNO    int saved_errno = errno
+#   define RESTORE_ERRNO  (errno = saved_errno)
+#endif
+
 SV* S_sv_string_from_errnum(pTHX_ int error, SV* value) {
-	dSAVEDERRNO;
-	SAVE_ERRNO;
+	dSAVE_ERRNO;
 	errno = error;
 	SV* result = newSVsv(get_sv("!", 0));
 	RESTORE_ERRNO;
