@@ -92,7 +92,6 @@ static OP* croak_##TYPE(pTHX) {\
 #define UNDEFINED_FILE_WRAPPER(TYPE, FILENAME)\
 static OP* croak_##TYPE(pTHX) {\
 	dSP;\
-	dAXMARKI;\
 	SV* filename = FILENAME;\
 	OP* next = opcodes[OP_##TYPE](aTHX);\
 	if (autocroak_enabled()) {\
