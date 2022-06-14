@@ -1,6 +1,7 @@
 Revision history for autocroak
 
 {{$NEXT}}
+          - Correct markstack handling for select
 
 0.007     2022-06-14 14:10:47+02:00 Europe/Amsterdam
           - Fix compilation on 5.10.0

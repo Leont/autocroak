@@ -263,11 +263,11 @@ static OP* croak_PRINT(pTHX) {
 
 static OP* croak_SSELECT(pTHX) {
 	dSP;
-	dAXMARKI;
 	OP* next = opcodes[OP_SSELECT](aTHX);
 	if (autocroak_enabled()) {
 		SPAGAIN;
-		if (SvIV(ST(0)) < 0 && !allowed_for(SSELECT, FALSE)) {
+		SV* result = SP[GIMME_V == G_LIST ? -1 : 0];
+		if (SvIV(result) < 0 && !allowed_for(SSELECT, FALSE)) {
 			SV* message = newSVpvs("Could not select: ");
 			sv_caterror(message, errno);
 			throw_sv(message);
